@@ -1,11 +1,12 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder,ReplyKeyboardBuilder
 from aiogram.types import KeyboardButton,InlineKeyboardButton,ReplyKeyboardMarkup,InlineKeyboardMarkup
+from datetime import datetime,timedelta
 from main import PRODUCT_NAMES,PRODUCT_PRICES
 async def start_keyboard():
     builder = InlineKeyboardBuilder()
     builder.add(
         InlineKeyboardButton(text="🛍️Продажа",callback_data="sell"),
-        InlineKeyboardButton(text="📝Расход/Трата",callback_data="spend"),
+        InlineKeyboardButton(text="📝Расход/Трата",callback_data="spending"),
     )    
     builder.adjust(2)
     return builder.as_markup()
@@ -14,11 +15,39 @@ async def admin_start_keyboard():
     builder = InlineKeyboardBuilder()
     builder.add(
         InlineKeyboardButton(text="🛍️Продажа",callback_data="sell"),
-        InlineKeyboardButton(text="📝Расход/Трата",callback_data="spend"),
+        InlineKeyboardButton(text="📝Расход/Трата",callback_data="spending"),
+        InlineKeyboardButton(text="🪄Счета",callback_data="bills"),
+        InlineKeyboardButton(text="🪄Расходы",callback_data="spends"),
         InlineKeyboardButton(text="📊Отчет",callback_data="report"),
+        
         
     )    
     builder.adjust(2)
+    return builder.as_markup()
+async def spend_type_keyboard():
+    builder = InlineKeyboardBuilder()
+    builder.add(
+        InlineKeyboardButton(text="🙆‍♂️Зарплата",callback_data="salary"),
+        InlineKeyboardButton(text="🍴СТАФФФФ!",callback_data="staff"),
+        InlineKeyboardButton(text="💸Расходы",callback_data="spend")
+    )
+    builder.adjust(2)
+    return builder.as_markup()
+async def key_choose_worker():
+    builder = InlineKeyboardBuilder()
+    builder.add(
+        InlineKeyboardButton(text="👨‍🍳Повар",callback_data="chef"),
+
+    )
+    builder.adjust(1)
+    return builder.as_markup()
+async def key_yes():
+    builder = InlineKeyboardBuilder()
+    builder.add(
+        InlineKeyboardButton(text="Да",callback_data="yes")
+
+    )
+    builder.adjust(1)
     return builder.as_markup()
 async def key_reports():
     builder= ReplyKeyboardBuilder()
@@ -39,7 +68,7 @@ async def custom_keyboard_sell(custom: str = None, customs: list = None):
     total_sum = 0
 
     # Mahsulotlar ro‘yxati matni
-    text = "<b>📦 Tanlangan mahsulotlar:</b>\n\n"
+    text = "<b>📦 Выбранные продукты:</b>\n\n"
     for code, count in counts.items():
         name = PRODUCT_NAMES.get(code, code)
         price = PRODUCT_PRICES.get(code, 0)
@@ -47,9 +76,9 @@ async def custom_keyboard_sell(custom: str = None, customs: list = None):
         total_sum += total
         text += f"• {name}: {count} x {price} = {total} so‘m\n"
     if not counts:
-        text += "❌ Mahsulot tanlanmagan\n"
+        text += "❌ Продукт не выбран\n"
     else:
-        text += f"\n<b>💸 Umumiy summa:</b> {total_sum} so‘m"
+        text += f"\n<b>💸 Итого:</b> {total_sum} so‘m"
 
     # Klaviatura
     keyboard = InlineKeyboardBuilder()
@@ -60,16 +89,16 @@ async def custom_keyboard_sell(custom: str = None, customs: list = None):
         ("➖", "subtract_MOR10000"),
         ("Мор 15000", "add_MOR15000"),
         ("➖", "subtract_MOR15000"),
-        ("Самса 8000", "add_SAM8000"),
-        ("➖", "subtract_SAM8000"),
-        ("Самса 2X -15000", "add_SAM2X15000"),
-        ("➖", "subtract_SAM2X15000"),
+        ("Самса 8000", "add_MSAM8000"),
+        ("➖", "subtract_MSAM8000"),
+        ("гов.Самса 7500", "add_MSAM7500"),
+        ("➖", "subtract_MSAM7500"),
         ("Самса 6000", "add_SAMSA6000"),
         ("➖", "subtract_SAMSA6000"),
         ("Кур. САМСА 8000", "add_KSAMSA8000"),
         ("➖", "subtract_KSAMSA8000"),
-        ("Кур. САМСА 15000", "add_KSAMSA15000"),
-        ("➖", "subtract_KSAMSA15000"),
+        ("Кур. САМСА 7500", "add_KSAMSA7500"),
+        ("➖", "subtract_KSAMSA7500"),
         ("Хот-дог 10000", "add_hotdog10000"),
         ("➖", "subtract_hotdog10000"),
         ("Хот-дог 15000", "add_hotdog15000"),
@@ -81,7 +110,14 @@ async def custom_keyboard_sell(custom: str = None, customs: list = None):
         ("Соус 5000", "add_sous5000"),
         ("➖", "subtract_sous5000"),
         ("Соус 2000", "add_sous2000"),
-        ("➖", "subtract_sous2000")
+        ("➖", "subtract_sous2000"),
+        ("чай 5000", "add_tea5000"),
+        ("➖", "subtract_tea5000"),
+        ("чай 3000", "add_tea3000"),
+        ("➖", "subtract_tea3000"),
+        ("Чашка 1000", "add_cup1000"),
+        ("➖", "subtract_cup1000"),
+        
     ]
     for text_btn, callback_data in buttons:
         keyboard.add(InlineKeyboardButton(text=text_btn, callback_data=callback_data))
@@ -123,3 +159,86 @@ async def generate_time_period_keyboard(report_type: str) -> InlineKeyboardMarku
     
     builder.adjust(2)
     return builder.as_markup()
+async def generate_editor_order_keyboard(order_id: int) -> InlineKeyboardMarkup:
+    """Генерирует клавиатуру для редактирования заказа"""
+    builder = InlineKeyboardBuilder()
+
+    buttons = [
+        ("🗑️ Удалить", f"delete_order:{order_id}"),
+        
+        ("🔙 На главную", "BackToStartPanel")
+    ]
+
+    for text, callback_data in buttons:
+        builder.add(InlineKeyboardButton(text=text, callback_data=callback_data))
+
+    builder.adjust(2)
+    return builder.as_markup()
+async def generate_editor_spend_keyboard(spend_id: int) -> InlineKeyboardMarkup:
+    """Генерирует клавиатуру для редактирования расхода"""
+    builder = InlineKeyboardBuilder()
+
+    buttons = [
+        ("🗑️ Удалить", f"delete_spend:{spend_id}"),
+        
+        ("🔙 На главную", "BackToStartPanel")
+    ]
+
+    for text, callback_data in buttons:
+        builder.add(InlineKeyboardButton(text=text, callback_data=callback_data))
+
+    builder.adjust(2)
+    return builder.as_markup()
+async def generate_date_bills_keyboard() -> InlineKeyboardMarkup:
+    """Генерирует клавиатуру для выбора даты в формате YYYY-MM-DD"""
+    builder = InlineKeyboardBuilder()
+    today = datetime.now()
+    
+    # Bugungi vaqtni formatlash
+    today_str = today.strftime("%Y-%m-%d")
+    
+    # 1, 2, 3 kun oldingi sanalarni hisoblash
+    yesterday = today - timedelta(days=1)
+    day_before_yesterday = today - timedelta(days=2)
+    three_days_ago = today - timedelta(days=3)
+    
+    buttons = [
+        (f"📅 ({today_str})", f"bill:{today_str}"),
+        (f"📅 ({yesterday.strftime('%Y-%m-%d')})", f"bill:{yesterday.strftime('%Y-%m-%d')}"),
+        (f"📅 {day_before_yesterday.strftime('%Y-%m-%d')}", f"bill:{day_before_yesterday.strftime('%Y-%m-%d')}"),
+        (f"📅 {three_days_ago.strftime('%Y-%m-%d')}", f"bill:{three_days_ago.strftime('%Y-%m-%d')}"),
+        ("🔙 На главную", "BackToStartPanel")
+    ]
+
+    for text, callback_data in buttons:
+        builder.add(InlineKeyboardButton(text=text, callback_data=callback_data))
+
+    builder.adjust(2)
+    return builder.as_markup()
+async def generate_date_spends_keyboard() -> InlineKeyboardMarkup:
+    """Генерирует клавиатуру для выбора даты в формате YYYY-MM-DD"""
+    builder = InlineKeyboardBuilder()
+    today = datetime.now()
+    
+    # Bugungi vaqtni formatlash
+    today_str = today.strftime("%Y-%m-%d")
+    
+    # 1, 2, 3 kun oldingi sanalarni hisoblash
+    yesterday = today - timedelta(days=1)
+    day_before_yesterday = today - timedelta(days=2)
+    three_days_ago = today - timedelta(days=3)
+    
+    buttons = [
+        (f"📅 ({today_str})", f"spends:{today_str}"),
+        (f"📅 ({yesterday.strftime('%Y-%m-%d')})", f"spends:{yesterday.strftime('%Y-%m-%d')}"),
+        (f"📅 {day_before_yesterday.strftime('%Y-%m-%d')}", f"spends:{day_before_yesterday.strftime('%Y-%m-%d')}"),
+        (f"📅 {three_days_ago.strftime('%Y-%m-%d')}", f"spends:{three_days_ago.strftime('%Y-%m-%d')}"),
+        ("🔙 На главную", "BackToStartPanel")
+    ]
+
+    for text, callback_data in buttons:
+        builder.add(InlineKeyboardButton(text=text, callback_data=callback_data))
+
+    builder.adjust(2)
+    return builder.as_markup()
+

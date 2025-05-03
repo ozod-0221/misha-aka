@@ -5,6 +5,10 @@ import os
 from json_utils import *
 from typing import Optional
 from datetime import timedelta
+
+
+
+
 def filter_by_period(data: list, period: str) -> pd.DataFrame:
     """Фильтрует данные по выбранному периоду"""
     if not data:
@@ -15,17 +19,17 @@ def filter_by_period(data: list, period: str) -> pd.DataFrame:
     
     now = datetime.now()
     periods = {
-        'day': now - timedelta(days=1),
-        'week': now - timedelta(weeks=1),
-        'month': now - timedelta(days=30),
-        'year': now - timedelta(days=365),
+        'day': now.replace(hour=0, minute=0, second=0, microsecond=0),
+        'week': (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0),
+        'month': now.replace(day=1, hour=0, minute=0, second=0, microsecond=0),
+        'year': now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
         'all': datetime.min
     }
     
     start_date = periods.get(period, periods['day'])
     return df[df['date'] >= start_date]
+
 async def generate_report(report_type: str, period: str) -> tuple:
-    
     """Генерирует отчет и возвращает текст и файл"""
     file_path = SPENDING if report_type == 'spend' else ORDERS
     report_name = "Расходы" if report_type == 'spend' else "Заказы"
@@ -40,10 +44,10 @@ async def generate_report(report_type: str, period: str) -> tuple:
     count = len(df)
     
     period_names = {
-        'day': "последний день",
-        'week': "последнюю неделю",
-        'month': "последний месяц",
-        'year': "последний год",
+        'day': "сегодня",
+        'week': "текущую неделю",
+        'month': "текущий месяц",
+        'year': "текущий год",
         'all': "все время"
     }
     
